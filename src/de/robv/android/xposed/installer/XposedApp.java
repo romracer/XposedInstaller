@@ -33,7 +33,7 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
 
 	@SuppressLint("SdCardPath")
 	public static final String BASE_DIR = "/data/data/de.robv.android.xposed.installer/";
-	private static final File XPOSED_PROP_FILE = new File("/system/xposed.prop");
+	private static File XPOSED_PROP_FILE = new File("/xposed/xposed.prop");
 
 	private static XposedApp mInstance = null;
 	private static Thread mUiThread;
@@ -124,6 +124,23 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
 					} catch (IOException ignored) {}
 				}
 			}
+		} else {
+			XPOSED_PROP_FILE = new File("/system/xposed.prop");
+			if (XPOSED_PROP_FILE.canRead()) {
+				FileInputStream is = null;
+				try {
+					is = new FileInputStream(XPOSED_PROP_FILE);
+					map = parseXposedProp(is);
+				} catch (IOException e) {
+					Log.e(XposedApp.TAG, "Could not read " + XPOSED_PROP_FILE.getPath(), e);
+				} finally {
+					if (is != null) {
+						try {
+							is.close();
+						} catch (IOException ignored) {}
+					}
+				}
+	                }
 		}
 
 		synchronized (this) {
